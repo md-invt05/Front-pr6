@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Авторизация (через сессии)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 p-8">
+  <div class="max-w-xl mx-auto bg-white p-6 rounded-xl shadow-md">
+    <h1 class="text-2xl font-bold mb-4">Авторизация</h1>
+
+    <!-- Кнопка для переключения между режимами "Вход" и "Регистрация" -->
+    <button id="toggleModeBtn"
+            class="bg-gray-600 text-white px-4 py-2 rounded mb-4"
+            onclick="switchMode()">
+      Переключиться на Режим: Регистрация
+    </button>
+
+    <!-- Заголовок формы, меняется в зависимости от режима -->
+    <h2 id="formHeader" class="text-xl font-semibold mb-2">Вход</h2>
+
+    <!-- Форма авторизации (вход или регистрация) -->
+    <div id="authSection" class="space-y-2 mb-4">
+      <input id="authUsername" class="border p-2 w-full" type="text" placeholder="Имя пользователя">
+      <input id="authPassword" class="border p-2 w-full" type="password" placeholder="Пароль">
+      <button id="submitBtn" onclick="handleSubmit()"
+              class="bg-blue-600 text-white px-4 py-2 rounded">
+        Войти
+      </button>
+      <p id="authMessage" class="text-red-600"></p>
+    </div>
+
+    <!-- Защищённый раздел, который появляется после успешного входа -->
+    <div id="protectedSection" class="hidden mt-4">
+      <p id="welcomeMessage" class="mb-4"></p>
+      <!-- Кнопка для получения данных профиля (защищённый эндпоинт) -->
+      <button onclick="fetchProfileData()"
+              class="bg-purple-600 text-white px-4 py-2 rounded">
+        Получить данные профиля
+      </button>
+      <!-- Кнопка для выхода из системы -->
+      <button onclick="logoutUser()"
+              class="bg-red-600 text-white px-4 py-2 rounded mt-4">
+        Выйти
+      </button>
+      <!-- Вывод полученных данных -->
+      <pre id="profileData" class="mt-4 bg-gray-100 p-2 rounded"></pre>
+    </div>
+  </div>
+
+  <script>
+    // --- Конфигурация ---
+    // Флаг режима: false = вход, true = регистрация
+    let isRegister = false;
+    // Базовый адрес сервера (если сервер запущен на localhost:3000)
+    const API_BASE = 'http://localhost:3000';
+
+    // --- Функция переключения между режимами ---
+    function switchMode() {
+      isRegister = !isRegister;
+      const formHeader = document.getElementById('formHeader');
+      const submitBtn = document.getElementById('submitBtn');
+      const toggleBtn = document.getElementById('toggleModeBtn');
+
+      if (isRegister) {
+        formHeader.textContent = 'Регистрация';
+        submitBtn.textContent = 'Зарегистрироваться';
+        toggleBtn.textContent = 'Переключиться на Режим: Вход';
+      } else {
+        formHeader.textContent = 'Вход';
+        submitBtn.textContent = 'Войти';
+        toggleBtn.textContent = 'Переключиться на Режим: Регистрация';
+      }
+    }
+
+    // --- Обработка отправки формы (вход или регистрация) ---
+    async function handleSubmit() {
+      const username = document.getElementById('authUsername').value.trim();
+      const password = document.getElementById('authPassword').value.trim();
+      const authMessageEl = document.getElementById('authMessage');
+
+      // Определяем эндпоинт: если режим регистрации — /register, иначе /login
+      const endpoint = isRegister ? '/register' : '/login';
+
+      try {
+        // Отправляем запрос
+        // credentials: 'include' — передача куки (сессии)
+        const response = await fetch(API_BASE + endpoint, {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          // Если сервер вернул ошибку (401, 400 и т.д.)
+          authMessageEl.textContent = data.message || 'Ошибка';
+          return;
+        }
+
+        // Успех
+        authMessageEl.textContent = data.message ||
+          (isRegister ? 'Регистрация прошла успешно' : 'Вход выполнен успешно');
+
+        // Если это был вход, показываем защищённый раздел
+        if (!isRegister) {
+          showProtectedSection(username);
+        }
+      } catch (error) {
+        authMessageEl.textContent = 'Ошибка: ' + error;
+      }
+    }
+
+    // --- Показ защищённого интерфейса ---
+    function showProtectedSection(username) {
+      // Скрываем форму и переключатель
+      document.getElementById('authSection').classList.add('hidden');
+      document.getElementById('toggleModeBtn').classList.add('hidden');
+      document.getElementById('formHeader').classList.add('hidden');
+      document.getElementById('authMessage').classList.add('hidden');
+
+      // Показываем защищённый раздел
+      document.getElementById('protectedSection').classList.remove('hidden');
+      document.getElementById('welcomeMessage').textContent =
+        'Добро пожаловать, ' + username + '!';
+    }
+
+    // --- Получение данных профиля (/profile) ---
+    async function fetchProfileData() {
+      try {
+        const response = await fetch(API_BASE + '/profile', {
+          method: 'GET',
+          credentials: 'include'
+        });
+        if (!response.ok) {
+          document.getElementById('profileData').textContent = 'Ошибка: ' + response.status;
+          return;
+        }
+        const data = await response.json();
+        // Пример: data = { user: { id, username } }
+        document.getElementById('profileData').textContent = JSON.stringify(data, null, 2);
+      } catch (error) {
+        document.getElementById('profileData').textContent = 'Ошибка: ' + error;
+      }
+    }
+
+    // --- Выход (POST /logout), уничтожение сессии ---
+    async function logoutUser() {
+      try {
+        const response = await fetch(API_BASE + '/logout', {
+          method: 'POST',
+          credentials: 'include'
+        });
+        const data = await response.json();
+        console.log(data.message);
+        // После выхода перезагружаем страницу (возвращаемся к форме)
+        window.location.href = '/auth.html';
+      } catch (error) {
+        console.error('Ошибка при выходе:', error);
+      }
+    }
+
+    // --- При загрузке страницы проверяем, есть ли активная сессия (/profile) ---
+    window.addEventListener('DOMContentLoaded', async () => {
+      try {
+        const response = await fetch(API_BASE + '/profile', {
+          method: 'GET',
+          credentials: 'include'
+        });
+        if (response.ok) {
+          const data = await response.json();
+          // Если сервер вернул user (значит, сессия есть) — показываем защищённый раздел
+          if (data.user) {
+            showProtectedSection(data.user.username);
+          }
+        }
+      } catch (error) {
+        console.error('Ошибка при проверке сессии:', error);
+      }
+    });
+  </script>
+</body>
+</html>

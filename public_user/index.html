@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Витрина товаров</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <a href="/auth.html" class="bg-blue-600 text-white px-4 py-2 rounded">
+        Войти / Регистрация
+      </a>
+</head>
+<body class="bg-gray-50 min-h-screen p-8">
+    <div class="container mx-auto max-w-6xl">
+        <header class="mb-8">
+            <h1 class="text-4xl font-extrabold text-center text-purple-800">Каталог товаров</h1>
+            <p class="text-center text-gray-600 mt-2">Ознакомьтесь с нашими товарами</p>
+        </header>
+
+        <div id="products" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+    </div>
+    
+    <script>
+        async function loadProducts() {
+          // Формируем GraphQL-запрос
+          const query = `
+            {
+              products {
+                name
+                price
+                categories
+              }
+            }
+          `;
+          
+          try {
+              // Отправляем POST-запрос на GraphQL эндпоинт
+              const response = await fetch('http://localhost:3000/graphql', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ query })
+              });
+              
+              const result = await response.json();
+              const products = result.data.products;
+              
+              const productsContainer = document.getElementById('products');
+              productsContainer.innerHTML = products.map(product => `
+                  <div class="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition duration-200">
+                      <h2 class="text-2xl font-semibold text-purple-700">${product.name}</h2>
+                      <p class="text-xl font-bold text-purple-600 mt-3">${product.price} ₽</p>
+                      <p class="text-sm text-gray-500 mt-2">Категории: ${product.categories.join(', ')}</p>
+                  </div>
+              `).join('');
+          } catch (error) {
+              console.error('Ошибка загрузки товаров:', error);
+          }
+      }
+      loadProducts();
+    </script>
+    <section id="chat" class="mt-8 p-4 bg-white rounded-xl shadow-lg">
+        <h2 class="text-xl font-semibold text-purple-700 mb-4">Чат поддержки</h2>
+        <div id="chatContainer" class="mb-4" style="max-height: 300px; overflow-y: auto;"></div>
+        <input type="text" id="chatInput" placeholder="Введите сообщение..." class="border p-2 w-full mb-2">
+        <button onclick="sendMessage()" class="w-full bg-purple-600 text-white p-2 rounded">Отправить</button>
+    </section>
+    <script>
+        // Подключаемся к WebSocket-серверу
+        const socket = new WebSocket('ws://localhost:8080');
+
+        let chatHistory = JSON.parse(localStorage.getItem('chatHistory')) || [];
+
+    
+        socket.onopen = () => {
+            console.log('Подключено к WebSocket серверу');
+        };
+    
+        socket.onmessage = (event) => {
+            try {
+                const data = JSON.parse(event.data); // Парсим JSON-строку в объект
+                displayMessage(data.text); // Отображаем только текст сообщения
+            } catch (error) {
+                console.error('Ошибка обработки сообщения:', error);
+            }
+        };
+    
+        socket.onclose = () => {
+            console.log('WebSocket соединение закрыто');
+        };
+    
+        // Функция для отправки сообщения
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            if (message) {
+                // Сразу отображаем собственное сообщение
+                displayMessage("Покупатель: " + message);
+
+                // Отправляем на сервер
+                socket.send(JSON.stringify({ text: "Покупатель: " + message }));
+                input.value = '';
+            }
+        }
+        function renderChatHistory() {
+            const chatContainer = document.getElementById('chatContainer');
+            chatContainer.innerHTML = chatHistory.map(msg => `<p>${msg}</p>`).join('');
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+        
+        
+        // Функция для отображения сообщения в чате
+        function displayMessage(message) {
+            chatHistory.push(message);
+            localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
+            renderChatHistory();
+        }
+        // Вызов при загрузке
+        renderChatHistory();
+    </script>    
+</body>
+</html>

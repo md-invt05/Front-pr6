@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Панель администратора - Магазин</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen p-8">
+    <div class="container mx-auto max-w-6xl">
+        <header class="mb-8">
+            <h1 class="text-4xl font-extrabold text-center text-purple-800">Панель администратора</h1>
+            <p class="text-center text-gray-600 mt-2">Управление товарами интернет-магазина</p>
+        </header>
+
+        <!-- Форма добавления товара -->
+        <section class="bg-white p-8 rounded-xl shadow-lg mb-8">
+            <h2 class="text-2xl font-semibold text-purple-700 mb-6">Новый товар</h2>
+            <form id="productForm" class="space-y-4 md:grid md:grid-cols-2 md:gap-6 md:space-y-0">
+                <input type="text" id="name" placeholder="Название товара" required class="border border-gray-300 p-3 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-purple-500">
+                <input type="number" id="price" placeholder="Цена (₽)" required class="border border-gray-300 p-3 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-purple-500">
+                <input type="text" id="description" placeholder="Описание" required class="border border-gray-300 p-3 rounded-lg w-full md:col-span-2 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                <input type="text" id="categories" placeholder="Категории (через запятую)" required class="border border-gray-300 p-3 rounded-lg w-full md:col-span-2 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                <button type="submit" class="md:col-span-2 bg-purple-600 hover:bg-purple-700 text-white p-3 rounded-lg transition duration-200 w-full">Добавить товар</button>
+            </form>
+        </section>
+
+        <!-- Список товаров -->
+        <section class="bg-white p-8 rounded-xl shadow-lg">
+            <h2 class="text-2xl font-semibold text-purple-700 mb-6">Товары</h2>
+            <div class="overflow-x-auto">
+                <table class="w-full border-collapse text-left">
+                    <thead>
+                        <tr class="bg-purple-100 text-purple-800">
+                            <th class="p-4 font-medium">Название</th>
+                            <th class="p-4 font-medium">Цена (₽)</th>
+                            <th class="p-4 font-medium hidden md:table-cell">Категории</th>
+                            <th class="p-4 font-medium text-center">Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody id="productsTable" class="text-gray-700"></tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <!-- Модальное окно для редактирования -->
+    <div id="editModal" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center">
+        <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
+            <h2 class="text-2xl font-semibold text-purple-700 mb-6">Редактировать товар</h2>
+            <input type="hidden" id="editId">
+            <div class="space-y-4">
+                <input type="text" id="editName" placeholder="Название" required class="border border-gray-300 p-3 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-purple-500">
+                <input type="number" id="editPrice" placeholder="Цена (₽)" required class="border border-gray-300 p-3 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-purple-500">
+                <input type="text" id="editDescription" placeholder="Описание" required class="border border-gray-300 p-3 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-purple-500">
+                <input type="text" id="editCategories" placeholder="Категории (через запятую)" required class="border border-gray-300 p-3 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-purple-500">
+                <div class="flex space-x-4">
+                    <button id="saveEdit" class="bg-purple-600 hover:bg-purple-700 text-white p-3 rounded-lg w-full transition duration-200">Сохранить</button>
+                    <button id="closeModal" class="bg-gray-500 hover:bg-gray-600 text-white p-3 rounded-lg w-full transition duration-200">Отмена</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <section id="chat" class="mt-8 p-4 bg-white rounded-xl shadow-lg">
+        <h2 class="text-xl font-semibold text-purple-700 mb-4">Чат поддержки</h2>
+        <div id="chatContainer" class="mb-4" style="max-height: 300px; overflow-y: auto;"></div>
+        <input type="text" id="chatInput" placeholder="Введите сообщение..." class="border p-2 w-full mb-2">
+        <button onclick="sendMessage()" class="w-full bg-purple-600 text-white p-2 rounded">Отправить</button>
+    </section>    
+    <script src="admin.js" defer></script>
+</body>
+</html>

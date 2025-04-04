@@ -1,0 +1,29 @@
+{
+    "name": "front-pr5",
+    "version": "1.0.0",
+    "main": "index.js",
+    "scripts": {
+        "start:admin": "node backend/server.js",
+        "start": "concurrently  \"npm run start:admin\"",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "description": "",
+    "dependencies": {
+        "apollo-server-express": "^3.13.0",
+        "cors": "^2.8.5",
+        "dotenv": "^16.4.7",
+        "express": "^4.21.2",
+        "fs": "^0.0.1-security",
+        "graphql": "^16.10.0",
+        "swagger-jsdoc": "^6.2.8",
+        "swagger-ui-express": "^5.0.1",
+        "ws": "^8.18.1",
+        "yamljs": "^0.3.0"
+    },
+    "devDependencies": {
+        "concurrently": "^9.1.2"
+    }
+}

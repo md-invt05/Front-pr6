@@ -1,0 +1,101 @@
+openapi: 3.0.0
+info:
+  title: Admin API
+  version: 1.0.0
+  description: API для управления товарами (CRUD)
+servers:
+  - url: http://localhost:3000
+
+
+paths:
+  /api/products:
+    get:
+      summary: Получить списка товаров
+      responses:
+        "200":
+          description: Список товаров
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    name:
+                      type: string
+                    price:
+                      type: number
+                    description:
+                      type: string
+                    categories:
+                      type: array
+                      items:
+                        type: string
+    post:
+      summary: Добавить товар
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  price:
+                    type: number
+                  description:
+                    type: string
+                  categories:
+                    type: array
+                    items:
+                      type: string
+      responses:
+        "201":
+          description: Товар добавлен
+
+  /api/products/{id}:
+    put:
+      summary: Обновить товар
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                price:
+                  type: number
+                description:
+                  type: string
+                categories:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        "200":
+          description: Товар обновлен
+
+    delete:
+      summary: Удалить товар
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Товар удален
