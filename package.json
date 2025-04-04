@@ -13,9 +13,12 @@
     "description": "",
     "dependencies": {
         "apollo-server-express": "^3.13.0",
+        "bcrypt": "^5.1.1",
+        "cookie-parser": "^1.4.7",
         "cors": "^2.8.5",
         "dotenv": "^16.4.7",
         "express": "^4.21.2",
+        "express-session": "^1.18.1",
         "fs": "^0.0.1-security",
         "graphql": "^16.10.0",
         "swagger-jsdoc": "^6.2.8",
